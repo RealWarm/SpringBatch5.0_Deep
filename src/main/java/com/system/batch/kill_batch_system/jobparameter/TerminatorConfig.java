@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.converter.JobParametersConverter;
+import org.springframework.batch.core.converter.JsonJobParametersConverter;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -21,6 +23,12 @@ import java.time.format.DateTimeFormatter;
 @Slf4j
 @Configuration
 public class TerminatorConfig {
+
+    @Bean
+    public JobParametersConverter jobParametersConverter() {
+        return new JsonJobParametersConverter();
+    }
+
     @Bean
     public Job terminatorJob(JobRepository jobRepository, Step anotherStep) {
         return new JobBuilder("terminatorJob", jobRepository)
@@ -31,7 +39,7 @@ public class TerminatorConfig {
     @Bean
     public Step anotherStep(JobRepository jobRepository, PlatformTransactionManager transactionManager, Tasklet terminatorTasklet) {
         return new StepBuilder("anotherStep", jobRepository)
-                .tasklet(terminatorTasklet, transactionManager)
+                .tasklet(new SystemDestructionTasklet(), transactionManager)
                 .build();
     }
 
@@ -63,29 +71,46 @@ public class TerminatorConfig {
 //        };
 //    }
 
+//    @Bean
+//    public Tasklet terminatorTasklet(SystemInfiltrationParameters infiltrationParams) {
+//        return (contribution, chunkContext) -> {
+//            log.info("⚔️ 시스템 침투 작전 초기화!");
+//            log.info("임무 코드네임: {}", infiltrationParams.getMissionName());
+//            log.info("보안 레벨: {}", infiltrationParams.getSecurityLevel());
+//            log.info("작전 지휘관: {}", infiltrationParams.getOperationCommander());
+//
+//            // 보안 레벨에 따른 침투 난이도 계산
+//            int baseInfiltrationTime = 60; // 기본 침투 시간 (분)
+//            int infiltrationMultiplier = switch (infiltrationParams.getSecurityLevel()) {
+//                case 1 -> 1; // 저보안
+//                case 2 -> 2; // 중보안
+//                case 3 -> 4; // 고보안
+//                case 4 -> 8; // 최고 보안
+//                default -> 1;
+//            };
+//
+//            int totalInfiltrationTime = baseInfiltrationTime * infiltrationMultiplier;
+//
+//            log.info("💥 시스템 해킹 난이도 분석 중...");
+//            log.info("🕒 예상 침투 시간: {}분", totalInfiltrationTime);
+//            log.info("🏆 시스템 장악 준비 완료!");
+//
+//            return RepeatStatus.FINISHED;
+//        };
+//    }
+
     @Bean
-    public Tasklet terminatorTasklet(SystemInfiltrationParameters infiltrationParams) {
+    @StepScope
+    public Tasklet terminatorTasklet(
+            @Value("#{jobParameters['infiltrationTargets']}") String infiltrationTargets
+    ) {
         return (contribution, chunkContext) -> {
-            log.info("⚔️ 시스템 침투 작전 초기화!");
-            log.info("임무 코드네임: {}", infiltrationParams.getMissionName());
-            log.info("보안 레벨: {}", infiltrationParams.getSecurityLevel());
-            log.info("작전 지휘관: {}", infiltrationParams.getOperationCommander());
+            String[] targets = infiltrationTargets.split(",");
 
-            // 보안 레벨에 따른 침투 난이도 계산
-            int baseInfiltrationTime = 60; // 기본 침투 시간 (분)
-            int infiltrationMultiplier = switch (infiltrationParams.getSecurityLevel()) {
-                case 1 -> 1; // 저보안
-                case 2 -> 2; // 중보안
-                case 3 -> 4; // 고보안
-                case 4 -> 8; // 최고 보안
-                default -> 1;
-            };
-
-            int totalInfiltrationTime = baseInfiltrationTime * infiltrationMultiplier;
-
-            log.info("💥 시스템 해킹 난이도 분석 중...");
-            log.info("🕒 예상 침투 시간: {}분", totalInfiltrationTime);
-            log.info("🏆 시스템 장악 준비 완료!");
+            log.info("⚡ 침투 작전 개시");
+            log.info("첫 번째 타겟: {} 침투 시작", targets[0]);
+            log.info("마지막 타겟: {} 에서 집결", targets[1]);
+            log.info("🎯 임무 전달 완료");
 
             return RepeatStatus.FINISHED;
         };
