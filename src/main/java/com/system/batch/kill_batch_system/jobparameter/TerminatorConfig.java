@@ -35,31 +35,60 @@ public class TerminatorConfig {
                 .build();
     }
 
+//    @Bean
+//    @StepScope
+//    public Tasklet terminatorTasklet(
+//            @Value("#{jobParameters['executionDate']}") LocalDate executionDate,
+//            @Value("#{jobParameters['startTime']}") LocalDateTime startTime
+//    ) {
+//        return (contribution, chunkContext) -> {
+//            log.info("시스템 처형 정보:");
+//            log.info("처형 예정일: {}", executionDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
+//            log.info("작전 개시 시각: {}", startTime.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초")));
+//            log.info("⚡ {}에 예정된 시스템 정리 작전을 개시합니다.", executionDate);
+//            log.info("💀 작전 시작 시각: {}", startTime);
+//
+//            // 작전 진행 상황 추적
+//            LocalDateTime currentTime = startTime;
+//            for (int i = 1; i <= 3; i++) {
+//                currentTime = currentTime.plusHours(1);
+//                log.info("☠️ 시스템 정리 {}시간 경과... 현재 시각:{}", i, currentTime.format(DateTimeFormatter.ofPattern("HH시 mm분")));
+//            }
+//
+//            log.info("🎯 임무 완료: 모든 대상 시스템이 성공적으로 제거되었습니다.");
+//            log.info("⚡ 작전 종료 시각: {}", currentTime.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초")));
+//
+//
+//            return RepeatStatus.FINISHED;
+//        };
+//    }
+
     @Bean
-    @StepScope
-    public Tasklet terminatorTasklet(
-            @Value("#{jobParameters['executionDate']}") LocalDate executionDate,
-            @Value("#{jobParameters['startTime']}") LocalDateTime startTime
-    ) {
+    public Tasklet terminatorTasklet(SystemInfiltrationParameters infiltrationParams) {
         return (contribution, chunkContext) -> {
-            log.info("시스템 처형 정보:");
-            log.info("처형 예정일: {}", executionDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
-            log.info("작전 개시 시각: {}", startTime.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초")));
-            log.info("⚡ {}에 예정된 시스템 정리 작전을 개시합니다.", executionDate);
-            log.info("💀 작전 시작 시각: {}", startTime);
+            log.info("⚔️ 시스템 침투 작전 초기화!");
+            log.info("임무 코드네임: {}", infiltrationParams.getMissionName());
+            log.info("보안 레벨: {}", infiltrationParams.getSecurityLevel());
+            log.info("작전 지휘관: {}", infiltrationParams.getOperationCommander());
 
-            // 작전 진행 상황 추적
-            LocalDateTime currentTime = startTime;
-            for (int i = 1; i <= 3; i++) {
-                currentTime = currentTime.plusHours(1);
-                log.info("☠️ 시스템 정리 {}시간 경과... 현재 시각:{}", i, currentTime.format(DateTimeFormatter.ofPattern("HH시 mm분")));
-            }
+            // 보안 레벨에 따른 침투 난이도 계산
+            int baseInfiltrationTime = 60; // 기본 침투 시간 (분)
+            int infiltrationMultiplier = switch (infiltrationParams.getSecurityLevel()) {
+                case 1 -> 1; // 저보안
+                case 2 -> 2; // 중보안
+                case 3 -> 4; // 고보안
+                case 4 -> 8; // 최고 보안
+                default -> 1;
+            };
 
-            log.info("🎯 임무 완료: 모든 대상 시스템이 성공적으로 제거되었습니다.");
-            log.info("⚡ 작전 종료 시각: {}", currentTime.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초")));
+            int totalInfiltrationTime = baseInfiltrationTime * infiltrationMultiplier;
 
+            log.info("💥 시스템 해킹 난이도 분석 중...");
+            log.info("🕒 예상 침투 시간: {}분", totalInfiltrationTime);
+            log.info("🏆 시스템 장악 준비 완료!");
 
             return RepeatStatus.FINISHED;
         };
     }
+
 }
