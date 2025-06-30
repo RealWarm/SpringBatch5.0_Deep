@@ -32,8 +32,16 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
-
 	implementation 'org.springframework.boot:spring-boot-starter-json'
+
+	// 💀 추가하라: 기본 Spring Boot Test - 이건 기본 중의 기본 💀
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// 💀 추가하라: Spring Batch Test - 이게 진짜 핵심 무기 💀
+	testImplementation 'org.springframework.batch:spring-batch-test'
+
+	testImplementation 'com.h2database:h2'
+
 }
 
 tasks.named('test') {
